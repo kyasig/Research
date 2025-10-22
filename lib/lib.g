@@ -70,3 +70,25 @@ buildQuiver := function(g)
   Q := Quiver(Length(vertexList), edgeList);
   return Q;
 end;
+
+getLeftFace := function(edge, g)
+  local curr, face;
+  face := [edge[2]];
+  curr := (edge[2]) ^ (g[2]^-1);
+  while curr <> edge[2] do
+    Add(face, curr);
+    curr := curr ^ (g[2]^-1);
+  od;
+  return face;
+end;
+
+getRightFace := function(edge, g)
+  local curr, face;
+  face := [edge[1]];
+  curr := (edge[1]) ^ (g[2]);
+  while curr <> edge[1] do
+    Add(face, curr);
+    curr := curr ^ (g[2]);
+  od;
+  return face;
+end;
