@@ -127,9 +127,11 @@ getFacePaths:= function(g)
 end;
 
 genArrows := function(kq,g)
-  local arrowGens;
+  local arrowGens, n;
   arrowGens := GeneratorsOfAlgebra(kq);
-  return arrowGens{[(g[4]/2)..Length(arrowGens)]};
+  n := Length(Orbits(Group(getFaces(g)),[1..g[4]]));
+  return arrowGens{[n+1..Length(arrowGens)]};
+
 end;
 
 identity := function(kq,n) #no built in way to get the identity
