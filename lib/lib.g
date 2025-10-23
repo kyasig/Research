@@ -1,5 +1,8 @@
 LoadPackage("QPA");
 LoadPackage("GBNP");
+
+Ceil2 := x -> -Int(-x);
+
 epsilon := function(n)
   local e, i;
   e := ();
@@ -68,8 +71,13 @@ buildQuiver := function(g)
     od;
   od;
   Q := Quiver(Length(vertexList), edgeList);
-  return Q;
+  return [Q,edgeList];
 end;
+
+getAlgebra := function(q)
+ return PathAlgebra(Rationals,q);
+end;
+
 
 getLeftFace := function(edge, g)
   local curr, face;
@@ -91,4 +99,52 @@ getRightFace := function(edge, g)
     curr := curr ^ (g[2]);
   od;
   return face;
+end;
+
+getFacePaths:= function(g)
+  local edgeList, edges,right,left, i, j,index,pathList;
+  edges := [];
+  pathList := [];
+  edgeList := Orbits(Group(getEdges(g)), [1..g[4]]);
+  for i in edgeList do
+    right := getRightFace(i,g);
+    for j in right do
+      index := Int((j+1)/2);
+      #Ceil throws some strange error for whatever reason
+      Add(pathList, edgeList[index]);
+    od;
+    Add(edges, pathList);
+    pathList := [];
+    left := getLeftFace(i,g);
+    for j in left do
+      index := Int((j+1)/2);
+      Add(pathList, edgeList[index]);
+    od;
+    Add(edges, pathList);
+    pathList := [];
+  od;
+  return Set(edges);
+end;
+
+genArrows := function(kq,g)
+  local arrowGens;
+  arrowGens := GeneratorsOfAlgebra(kq);
+  return arrowGens{[(g[4]/2)..Length(arrowGens)]};
+end;
+
+identity := function(kq,n) #no built in way to get the identity
+  local gens,sum;
+  gens := GeneratorsOfAlgebra(kq);
+  sum := Sum(gens{[1..n]});
+  return sum;
+end;
+
+multiplyEdges := function(halfEdges, arrowGens,id)
+  local prod, i,index;
+  prod := id;
+  for i in halfEdges do
+    index := Int((i+1)/2);
+    prod := prod * arrowGens[index];
+  od;
+  return prod;
 end;
