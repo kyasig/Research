@@ -31,7 +31,11 @@ getFaces := function(g)
   return g[3];
 end;
 
-get_matrix_directed := function(n,p)
+numEdges := function(g)
+  return g[4];
+end;
+
+get_matrix_directed := function(n,p) #TODO make this just take a graph g as inpute instead
   local a,e,pair,i,j,source,target,v, ai,aj;
   e := epsilon(n);
   v := Orbits(Group(p),[1..n]);
@@ -54,24 +58,31 @@ get_matrix_directed := function(n,p)
   return a;
 end;
 
+
 buildQuiver := function(g)
-  local vertexList, edgeList, adjMatrix, s,t, n,i, Q;
-  n := g[4];
-  edgeList := [];
+  local vertexList, edgeList,edgesOfQuiver, Q,source,target,i, n, ind, name;
+  n := numEdges(g);
+  ind := 1; #This is just for naming each arrow in the quiver
   vertexList := Orbits(Group(getFaces(g)),[1..n]);
-  adjMatrix := get_matrix_directed(n, getFaces(g));
-  for s in [1..Length(adjMatrix)] do
-    for t in [1..Length(adjMatrix)] do
-      if adjMatrix[s][t] = 0 then
-        continue;
+  edgesOfQuiver := [];
+
+  for source in [1..Length(vertexList)] do
+    for i in vertexList[source] do
+      if (i mod 2 = 1) then
+        for target in [1..Length(vertexList)] do
+          if i+1 in vertexList[target] then
+           name := [CharInt(96 + source), CharInt(48+ind)]; #trick for converting to chars
+           Add(edgesOfQuiver,[source,target, name]);
+           ind := ind +1;
+          fi;
+        od;
       fi;
-      for i in [1..(adjMatrix[s][t]) ] do
-        Add(edgeList, [s,t,"a"]);
-      od;
     od;
+     ind := 1;
   od;
-  Q := Quiver(Length(vertexList), edgeList);
-  return [Q,edgeList];
+
+  Q := Quiver(Length(vertexList), edgesOfQuiver);
+  return [Q,edgesOfQuiver];
 end;
 
 getAlgebra := function(q)
@@ -82,10 +93,10 @@ end;
 getLeftFace := function(edge, g)
   local curr, face;
   face := [edge[2]];
-  curr := (edge[2]) ^ (g[2]^-1);
+  curr := (edge[2]) ^ (getVertices(g)^-1);
   while curr <> edge[2] do
     Add(face, curr);
-    curr := curr ^ (g[2]^-1);
+    curr := curr ^ (getVertices(g)^-1);
   od;
   return face;
 end;
@@ -93,10 +104,10 @@ end;
 getRightFace := function(edge, g)
   local curr, face;
   face := [edge[1]];
-  curr := (edge[1]) ^ (g[2]);
+  curr := (edge[1]) ^ getVertices(g);
   while curr <> edge[1] do
     Add(face, curr);
-    curr := curr ^ (g[2]);
+    curr := curr ^ (getVertices(g));
   od;
   return face;
 end;
@@ -105,7 +116,7 @@ getFacePaths:= function(g)
   local edgeList, edges,right,left, i, j,index,pathList;
   edges := [];
   pathList := [];
-  edgeList := Orbits(Group(getEdges(g)), [1..g[4]]);
+  edgeList := Orbits(Group(getEdges(g)), [1..numEdges(g)]);
   for i in edgeList do
     right := getRightFace(i,g);
     for j in right do
@@ -126,24 +137,26 @@ getFacePaths:= function(g)
   return Set(edges);
 end;
 
+#There doesnt seem to be a way to get the number of vertices, hence using the orignal graph
 genArrows := function(kq,g)
   local arrowGens, n;
   arrowGens := GeneratorsOfAlgebra(kq);
-  n := Length(Orbits(Group(getFaces(g)),[1..g[4]]));
+  n := Length(Orbits(Group(getFaces(g)),[1..numEdges(g)]));
   return arrowGens{[n+1..Length(arrowGens)]};
-
 end;
 
-identity := function(kq,n) #no built in way to get the identity
-  local gens,sum;
+#no built in way to get the identity
+identity := function(kq,g)
+  local gens,sum, n;
   gens := GeneratorsOfAlgebra(kq);
+  n := Length(Orbits(Group(getFaces(g)),[1..numEdges(g)]));
   sum := Sum(gens{[1..n]});
   return sum;
 end;
 
-multiplyEdges := function(halfEdges, arrowGens,id)
+multiplyEdges := function(halfEdges, arrowGens,g,kq)
   local prod, i,index;
-  prod := id;
+  prod := identity(kq,g);
   for i in halfEdges do
     index := Int((i+1)/2);
     prod := prod * arrowGens[index];
