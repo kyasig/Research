@@ -151,15 +151,69 @@ identity := function(kq,g)
   return sum;
 end;
 
-multiplyEdges := function(edges,q,kq,g)
- local edge, i,prod, arrows;
+multiplyEdges := function(halfEdges,q,kq,g)
+ local edge, i,prod, arrows,ind;
  prod := identity(kq,g);
  arrows := genArrows(kq,g);
- for edge in edges do
-  i := edge[1];
-  prod := prod * arrows[Position(q[3],i)];
+ for i in halfEdges do
+  if i mod 2 = 0 then
+    ind := i - 1;
+  else
+    ind := i;
+  fi;
+  prod := prod * arrows[ Position(q[3],ind)];
  od;
  return prod;
 end;
 
+superpotentialRelations := function(paths,q,kq,g)
+  local relations,path,i,j, prod1,prod2,curr,next;
+  relations := [];
+  for i in [1..Length(paths)] do;
+    if i mod 2 = 0 then
+      continue;
+    fi;
+    curr := List(paths[i], x -> x[1]);
+    next := List(paths[i+1], x -> x[1]);
+    prod1 := multiplyEdges(curr{[2..Length(curr)]},q,kq,g);
+    prod2 := multiplyEdges(next{[2..Length(next)]},q,kq,g);
+    Add(relations, prod1-prod2);
+  od;
+  return relations;
+end;
+
+zigzagRelations := function(g)
+  local edgeList,edge,phi,paths,fst;
+  paths := [];
+  phi := getFaces(g);
+  epsilon := getEdges(g);
+  edgeList := Orbits(Group(getEdges(g)), [1..numEdges(g)]);
+  for edge in edgeList do
+    fst := edge[1];
+    Add(paths,[fst, ((fst +1) ^(phi^-1)), (fst ^ (epsilon * phi * epsilon * phi))]);
+    Add(paths,[fst, ((fst+1)^phi), (fst ^ (epsilon * phi * epsilon * (phi^-1)))]);
+  od;
+  return paths;
+end;
+
+totalRelations := function(g,q,kq)
+  local relations, superpotentialPaths,zigzags, i,j,k,halfEdges;
+  relations := [];
+  halfEdges := [];
+  zigzags := zigzagRelations(g);
+  for i in zigzags do
+    Add(relations,multiplyEdges(i,q,kq,g));
+  od;
+  superpotentialPaths := superpotentialRelations(getSuperpotentialPaths(g),q,kq,g);
+  Append(relations,superpotentialPaths);
+  return relations;
+end;
+
+faceAlgebra := function(g)
+  local i,q,kq, B;
+  q:= buildQuiver(g);
+  kq := getAlgebra(q[1]);
+  i := Ideal(kq,totalRelations(g,q,kq));
+  return kq/i;
+end;
 
