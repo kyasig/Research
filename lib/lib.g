@@ -1,8 +1,6 @@
 LoadPackage("QPA");
 LoadPackage("GBNP");
 
-Ceil2 := x -> -Int(-x);
-
 epsilon := function(n)
   local e, i;
   e := ();
@@ -58,14 +56,13 @@ get_matrix_directed := function(n,p) #TODO make this just take a graph g as inpu
   return a;
 end;
 
-
 buildQuiver := function(g)
-  local vertexList, edgeList,edgesOfQuiver, Q,source,target,i, n, ind, name;
+  local vertexList, edgeList,edgesOfQuiver, Q,source,target,i, n, ind, name,indices;
   n := numEdges(g);
   ind := 1; #This is just for naming each arrow in the quiver
   vertexList := Orbits(Group(getFaces(g)),[1..n]);
   edgesOfQuiver := [];
-
+  indices := []; #List of odd half-edges, their position in this list corresponds to the position of their associated edge in the quiver
   for source in [1..Length(vertexList)] do
     for i in vertexList[source] do
       if (i mod 2 = 1) then
@@ -74,15 +71,15 @@ buildQuiver := function(g)
            name := [CharInt(96 + source), CharInt(48+ind)]; #trick for converting to chars
            Add(edgesOfQuiver,[source,target, name]);
            ind := ind +1;
+           Add(indices,i);
           fi;
         od;
       fi;
     od;
-     ind := 1;
+    ind := 1;
   od;
-
   Q := Quiver(Length(vertexList), edgesOfQuiver);
-  return [Q,edgesOfQuiver];
+  return [Q,edgesOfQuiver,indices];
 end;
 
 getAlgebra := function(q)
@@ -112,7 +109,7 @@ getRightFace := function(edge, g)
   return face;
 end;
 
-getFacePaths:= function(g)
+getSuperpotentialPaths:= function(g)
   local edgeList, edges,right,left, i, j,index,pathList;
   edges := [];
   pathList := [];
@@ -154,12 +151,15 @@ identity := function(kq,g)
   return sum;
 end;
 
-multiplyEdges := function(halfEdges, arrowGens,g,kq)
-  local prod, i,index;
-  prod := identity(kq,g);
-  for i in halfEdges do
-    index := Int((i+1)/2);
-    prod := prod * arrowGens[index];
-  od;
-  return prod;
+multiplyEdges := function(edges,q,kq,g)
+ local edge, i,prod, arrows;
+ prod := identity(kq,g);
+ arrows := genArrows(kq,g);
+ for edge in edges do
+  i := edge[1];
+  prod := prod * arrows[Position(q[3],i)];
+ od;
+ return prod;
 end;
+
+
