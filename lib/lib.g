@@ -69,6 +69,7 @@ buildQuiver := function(g)
         for target in [1..Length(vertexList)] do
           if i+1 in vertexList[target] then
            name := [CharInt(96 + source), CharInt(48+ind)]; #trick for converting to chars
+            #it might not be necessary to name the arrows -- just omit the "name" argument. But it doesn't hurt.
            Add(edgesOfQuiver,[source,target, name]);
            ind := ind +1;
            Add(indices,i);
@@ -135,6 +136,7 @@ getSuperpotentialPaths:= function(g)
 end;
 
 #There doesnt seem to be a way to get the number of vertices, hence using the orignal graph
+  #There should be. try "NumberOfVertices(q)", but there should be something using kq.
 genArrows := function(kq,g)
   local arrowGens, n;
   arrowGens := GeneratorsOfAlgebra(kq);
@@ -143,6 +145,7 @@ genArrows := function(kq,g)
 end;
 
 #no built in way to get the identity
+  #have you tried "One(kq)" ?
 identity := function(kq,g)
   local gens,sum, n;
   gens := GeneratorsOfAlgebra(kq);
@@ -215,5 +218,6 @@ faceAlgebra := function(g)
   kq := getAlgebra(q[1]);
   i := Ideal(kq,totalRelations(g,q,kq));
   return kq/i;
+  # may be able to replace "kq/i" by "kq/totalRelations(g,q,kq)" without defining the ideal, and this may even do the groebner basis too (?)
 end;
 
