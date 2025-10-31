@@ -80,11 +80,7 @@ buildQuiver := function(g)
     ind := 1;
   od;
   Q := Quiver(Length(vertexList), edgesOfQuiver);
-  return [Q,edgesOfQuiver,indices];
-end;
-
-getAlgebra := function(q)
- return PathAlgebra(Rationals,q);
+  return [Q,indices];
 end;
 
 
@@ -110,6 +106,32 @@ getRightFace := function(edge, g)
   return face;
 end;
 
+
+#There doesnt seem to be a way to get the number of vertices, hence using the orignal graph
+  #There should be. try "NumberOfVertices(q)", but there should be something using kq.
+genArrows := function(kq)
+  local arrowGens, n;
+  arrowGens := GeneratorsOfAlgebra(kq);
+  n := NumberOfVertices(QuiverOfPathAlgebra(kq));
+  return arrowGens{[n+1..Length(arrowGens)]};
+end;
+
+
+multiplyEdges := function(halfEdges,kq,indices)
+ local edge, i,prod, arrows,ind;
+ prod := One(kq);
+ arrows := genArrows(kq);
+ for i in halfEdges do
+  if i mod 2 = 0 then
+    ind := i - 1;
+  else
+    ind := i;
+  fi;
+  prod := prod * arrows[Position(indices,ind)];
+ od;
+ return prod;
+end;
+
 getSuperpotentialPaths:= function(g)
   local edgeList, edges,right,left, i, j,index,pathList;
   edges := [];
@@ -132,44 +154,10 @@ getSuperpotentialPaths:= function(g)
     Add(edges, pathList);
     pathList := [];
   od;
-  return Set(edges);
+  return edges;
 end;
 
-#There doesnt seem to be a way to get the number of vertices, hence using the orignal graph
-  #There should be. try "NumberOfVertices(q)", but there should be something using kq.
-genArrows := function(kq,g)
-  local arrowGens, n;
-  arrowGens := GeneratorsOfAlgebra(kq);
-  n := Length(Orbits(Group(getFaces(g)),[1..numEdges(g)]));
-  return arrowGens{[n+1..Length(arrowGens)]};
-end;
-
-#no built in way to get the identity
-  #have you tried "One(kq)" ?
-identity := function(kq,g)
-  local gens,sum, n;
-  gens := GeneratorsOfAlgebra(kq);
-  n := Length(Orbits(Group(getFaces(g)),[1..numEdges(g)]));
-  sum := Sum(gens{[1..n]});
-  return sum;
-end;
-
-multiplyEdges := function(halfEdges,q,kq,g)
- local edge, i,prod, arrows,ind;
- prod := identity(kq,g);
- arrows := genArrows(kq,g);
- for i in halfEdges do
-  if i mod 2 = 0 then
-    ind := i - 1;
-  else
-    ind := i;
-  fi;
-  prod := prod * arrows[ Position(q[3],ind)];
- od;
- return prod;
-end;
-
-superpotentialRelations := function(paths,q,kq,g)
+superpotentialRelations := function(paths,kq,indices)
   local relations,path,i,j, prod1,prod2,curr,next;
   relations := [];
   for i in [1..Length(paths)] do;
@@ -178,46 +166,50 @@ superpotentialRelations := function(paths,q,kq,g)
     fi;
     curr := List(paths[i], x -> x[1]);
     next := List(paths[i+1], x -> x[1]);
-    prod1 := multiplyEdges(curr{[2..Length(curr)]},q,kq,g);
-    prod2 := multiplyEdges(next{[2..Length(next)]},q,kq,g);
+    prod1 := multiplyEdges(curr{[2..Length(curr)]},kq,indices);
+    prod2 := multiplyEdges(next{[2..Length(next)]},kq,indices);
     Add(relations, prod1-prod2);
   od;
   return relations;
 end;
 
-zigzagRelations := function(g)
-  local edgeList,edge,phi,paths,fst;
+zigzagPaths := function(g)
+  local hedgeList,edge,phi,paths,fst;
   paths := [];
   phi := getFaces(g);
   epsilon := getEdges(g);
-  edgeList := Orbits(Group(getEdges(g)), [1..numEdges(g)]);
-  for edge in edgeList do
+  hedgeList := Orbits(Group(getEdges(g)), [1..numEdges(g)]);
+  for edge in hedgeList do
     fst := edge[1];
     Add(paths,[fst, ((fst +1) ^(phi^-1)), (fst ^ (epsilon * phi * epsilon * phi))]);
+
     Add(paths,[fst, ((fst+1)^phi), (fst ^ (epsilon * phi * epsilon * (phi^-1)))]);
   od;
   return paths;
 end;
 
-totalRelations := function(g,q,kq)
-  local relations, superpotentialPaths,zigzags, i,j,k,halfEdges;
+zigzagRelations := function(paths,kq,indices)
+  local relations, i;
   relations := [];
-  halfEdges := [];
-  zigzags := zigzagRelations(g);
-  for i in zigzags do
-    Add(relations,multiplyEdges(i,q,kq,g));
+  for i in paths do
+    Add(relations,multiplyEdges(i,kq,indices));
   od;
-  superpotentialPaths := superpotentialRelations(getSuperpotentialPaths(g),q,kq,g);
-  Append(relations,superpotentialPaths);
   return relations;
 end;
 
+totalRelations := function(g,kq,indices)
+  local relations,zigzags;
+  relations := superpotentialRelations(getSuperpotentialPaths(g),kq,indices);
+  zigzags := zigzagRelations(zigzagPaths(g),kq,indices);
+  Append(relations,zigzags);
+  return Set(relations);
+end;
+
 faceAlgebra := function(g)
-  local i,q,kq, B;
-  q:= buildQuiver(g);
-  kq := getAlgebra(q[1]);
-  i := Ideal(kq,totalRelations(g,q,kq));
-  return kq/i;
+  local i,q,kq;
+  q := buildQuiver(g);
+  kq := PathAlgebra(Rationals,q[1]);
+  return kq/totalRelations(g,kq,q[2]);
   # may be able to replace "kq/i" by "kq/totalRelations(g,q,kq)" without defining the ideal, and this may even do the groebner basis too (?)
 end;
 
