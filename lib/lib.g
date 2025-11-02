@@ -148,15 +148,15 @@ superpotentialRelations := function(paths,kq,indices)
 end;
 
 zigzagPaths := function(g)
-  local hedgeList,hedge,phi,paths,fst,snd,phiInv;
+  local edgeList,edge,phi,paths,fst,snd,phiInv;
   paths := [];
   phi := getFaces(g);
   phiInv := phi ^-1;
   epsilon := getEdges(g);
-  hedgeList := Orbits(Group(getEdges(g)), [1..numEdges(g)]);
-  for hedge in hedgeList do
-    fst := hedge[1]; #2i-1
-    snd := hedge[2]; #2i
+  edgeList := Orbits(Group(getEdges(g)), [1..numEdges(g)]);
+  for edge in edgeList do
+    fst := edge[1]; #2i-1
+    snd := edge[2]; #2i
     Add(paths,
       [fst, snd ^ phiInv, (snd ^ ( phiInv * epsilon * phi))]
     );
