@@ -33,29 +33,6 @@ numEdges := function(g)
   return g[4];
 end;
 
-get_matrix_directed := function(n,p) #TODO make this just takemod numVertices(g) a graph g as inpute instead
-  local a,e,pair,i,j,source,target,v, ai,aj;
-  e := epsilon(n);
-  v := Orbits(Group(p),[1..n]);
-  a := NullMat(Length(v),Length(v));
-  for pair in Orbits(Group(e),[1..n]) do
-    i := pair[1];
-    j := pair[2];
-    for source in v do
-      if i in source then
-        ai := Position(v,source);
-        for target in v do
-         if j in target then
-           aj := Position(v,target);
-           a[ai][aj] := a[ai][aj] + 1;
-         fi;
-        od;
-      fi;
-    od;
-  od;
-  return a;
-end;
-
 buildQuiver := function(g)
   local vertexList, edgeList,edgesOfQuiver, Q,source,target,i, n, ind, name,indices;
   n := numEdges(g);
@@ -68,8 +45,7 @@ buildQuiver := function(g)
       if (i mod 2 = 1) then
         for target in [1..Length(vertexList)] do
           if i+1 in vertexList[target] then
-           name := [CharInt(96 + source), CharInt(48+ind)]; #trick for converting to chars
-            #it might not be necessary to name the arrows -- just omit the "name" argument. But it doesn't hurt.
+           name := [CharInt(96 + source), CharInt(48+ind)];
            Add(edgesOfQuiver,[source,target, name]);
            ind := ind +1;
            Add(indices,i);
@@ -115,17 +91,17 @@ genArrows := function(kq)
 end;
 
 
-multiplyEdges := function(halfEdges,kq,indices)
- local edge, i,prod, arrows,ind;
- prod := One(kq);
+multiplyEdges := function(halfEdges,kq,indices) #uses a list of indices that match a half-edge with its position in the quiver
+ local edge, i,prod, arrows,halfEdge;
+ prod := One(kq); #multiplicative identity
  arrows := genArrows(kq);
- for i in halfEdges do
-  if i mod 2 = 0 then
-    ind := i - 1;
+ for halfEdge in halfEdges do
+  if halfEdge mod 2 = 0 then
+    i := halfEdge - 1;
   else
-    ind := i;
+    i := halfEdge;
   fi;
-  prod := prod * arrows[Position(indices,ind)];
+  prod := prod * arrows[Position(indices,i)];
  od;
  return prod;
 end;
@@ -172,26 +148,21 @@ superpotentialRelations := function(paths,kq,indices)
 end;
 
 zigzagPaths := function(g)
-  local hedgeList,hedge,phi,paths,fst,snd;
+  local hedgeList,hedge,phi,paths,fst,snd,phiInv;
   paths := [];
   phi := getFaces(g);
+  phiInv := phi ^-1;
   epsilon := getEdges(g);
   hedgeList := Orbits(Group(getEdges(g)), [1..numEdges(g)]);
   for hedge in hedgeList do
-    fst := hedge[1];
-    snd := hedge[2];
+    fst := hedge[1]; #2i-1
+    snd := hedge[2]; #2i
     Add(paths,
-    [
-    fst,
-    snd ^(phi^-1),
-    (snd ^ ( (phi^-1) * epsilon * phi))
-    ]);
+      [fst, snd ^ phiInv, (snd ^ ( phiInv * epsilon * phi))]
+    );
     Add(paths,
-    [
-    fst,
-    snd^phi,
-    (snd ^ (phi * epsilon * (phi^-1)))
-    ]);
+      [fst, snd ^ phi, (snd ^ (phi * epsilon * phiInv))]
+    );
   od;
   return paths;
 end;
@@ -218,6 +189,5 @@ faceAlgebra := function(g)
   q := buildQuiver(g);
   kq := PathAlgebra(Rationals,q[1]);
   return kq/totalRelations(g,kq,q[2]);
-  # may be able to replace "kq/i" by "kq/totalRelations(g,q,kq)" without defining the ideal, and this may even do the groebner basis too (?)
 end;
 
