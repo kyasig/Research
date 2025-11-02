@@ -33,7 +33,7 @@ numEdges := function(g)
   return g[4];
 end;
 
-get_matrix_directed := function(n,p) #TODO make this just take a graph g as inpute instead
+get_matrix_directed := function(n,p) #TODO make this just takemod numVertices(g) a graph g as inpute instead
   local a,e,pair,i,j,source,target,v, ai,aj;
   e := epsilon(n);
   v := Orbits(Group(p),[1..n]);
@@ -107,8 +107,6 @@ getRightFace := function(edge, g)
 end;
 
 
-#There doesnt seem to be a way to get the number of vertices, hence using the orignal graph
-  #There should be. try "NumberOfVertices(q)", but there should be something using kq.
 genArrows := function(kq)
   local arrowGens, n;
   arrowGens := GeneratorsOfAlgebra(kq);
@@ -174,16 +172,26 @@ superpotentialRelations := function(paths,kq,indices)
 end;
 
 zigzagPaths := function(g)
-  local hedgeList,edge,phi,paths,fst;
+  local hedgeList,hedge,phi,paths,fst,snd;
   paths := [];
   phi := getFaces(g);
   epsilon := getEdges(g);
   hedgeList := Orbits(Group(getEdges(g)), [1..numEdges(g)]);
-  for edge in hedgeList do
-    fst := edge[1];
-    Add(paths,[fst, ((fst +1) ^(phi^-1)), (fst ^ (epsilon * phi * epsilon * phi))]);
-
-    Add(paths,[fst, ((fst+1)^phi), (fst ^ (epsilon * phi * epsilon * (phi^-1)))]);
+  for hedge in hedgeList do
+    fst := hedge[1];
+    snd := hedge[2];
+    Add(paths,
+    [
+    fst,
+    snd ^(phi^-1),
+    (snd ^ ( (phi^-1) * epsilon * phi))
+    ]);
+    Add(paths,
+    [
+    fst,
+    snd^phi,
+    (snd ^ (phi * epsilon * (phi^-1)))
+    ]);
   od;
   return paths;
 end;
