@@ -148,7 +148,7 @@ superpotentialRelations := function(paths,kq,indices)
 end;
 
 zigzagPaths := function(g)
-  local edgeList,edge,phi,paths,fst,snd,phiInv;
+  local edgeList,edge,phi,paths,fst,snd,phiInv,epsilon;
   paths := [];
   phi := getFaces(g);
   phiInv := phi ^-1;
