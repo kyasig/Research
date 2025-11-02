@@ -1,0 +1,48 @@
+
+
+Examples of Bipartite Ribbon Graphs.
+
+ For each example below, n is the number of edges, and the edge permutation is e = (1,2)(3,4)... (2n-1,2n).  
+The vertex permutation v is given.  To be bipartite, each cycle of v should consist entirely of even numbers (black vertex) or entirely of odd numbers (white vertex).  
+We assume that v has no cycles of length < 3.
+The face permutation is f = v*e (or e*v in gap).  
+
+1) square dimer on torus.  2 black, 2 white vertices, each is 4-valent, 4 4-faces.
+n := 8;
+v := (1,7,5,3)(2,12,6,10)(15,9,13,11)(14,8,16,4);
+f : = e*v;
+
+2) dimer on torus (face mutation of (1) at face 1).  4 black, 4 white vertices, each 3-valent; 2 4-faces and 2 8-faces. Cartan matrix is [2, 2, 0, 2; 2, 2, 2, 4; 0, 2, 2, 2; 2, 4, 2, 2] up to some reordering of the vertices.
+
+n := 12;
+v := (1,11,17)(2,24,4)(3,21,15)(5,23,7)(6,10,18)(8,22,14)(9,13,19)(12,16,20);
+f := e*v;
+
+3) Example from a triangulation of torus. 2 white 3-valent vertices, 1 black 6-valent vertex,
+ 3 4-faces.
+
+n := 6;
+v := (1,5,3)(7,11,9)(2,8,6,12,4,10);
+f := e*v;
+
+4) Another example (starting from a quiver),  Quiver has 5 vertices, each with in-deg = out-deg = 2.  Bipartite graph has 5 4-faces and 3? vertices.
+
+n := 10;
+f := (1,18,11,10)(2,3,20,13)(4,5,12,15)(6,7,14,17)(8,9,16,19);
+v := e*f;
+
+5) Another quiver example: 8 vertices of in-deg = out-deg = 2.  Bipartite graph has 8 4-faces. (dimer quiver of a square tiling of the torus -- larger version of (1).)
+
+n := 16;
+f := (2,9,14,3)(1,8,25,12)(6,11,30,7)(28,29,24,31)(22,23,26,27)(13,20,21,18)(16,17,32,19)(4,15,10,5);
+v := e*f;
+
+
+
+6) A non-reduced example with 2 bivalent vertices (we probably need to define extra relations here if we want the algebra to be "nice").
+
+n := 15;
+v := (2,10,20,24)(4,12,22,30,8)(1,9,17,25)(3,13,5,29,21,11)(6,14,28,18)(26,16)(7,23)(15,19,27)
+f := e*v;
+
+ 
