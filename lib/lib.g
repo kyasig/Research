@@ -167,23 +167,6 @@ zigzagPaths := function(g)
   return paths;
 end;
 
-otherZigzagPathsFake := function(kq)
-  local paths,q,vertices,i,relations,j,k;
-  q := QuiverOfPathAlgebra(kq);
-  paths := [];
-  vertices := Filtered(VerticesOfQuiver(q), v -> OutDegreeOfVertex(v) > 2);
-  for j in vertices do
-    for k in PathsOfLengthTwo(q) do
-      if WalkOfPath(k)[1] in OutgoingArrowsOfVertex(j) then
-        Print(WalkOfPath(k));
-        Print("\n");
-        Add(paths,k);
-      fi;
-    od;
-  od;
-  return paths;
-end;
-
 otherZigzagPaths:= function(g,q,indices)
   local edgeList,i,j,k,arrow,vertex,correspondingHedge,paths,fst,dualVertices,filtered;
   edgeList := Orbits(Group(getEdges(g)), [1..numEdges(g)]);
