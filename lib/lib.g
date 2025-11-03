@@ -167,6 +167,53 @@ zigzagPaths := function(g)
   return paths;
 end;
 
+otherZigzagPathsFake := function(kq)
+  local paths,q,vertices,i,relations,j,k;
+  q := QuiverOfPathAlgebra(kq);
+  paths := [];
+  vertices := Filtered(VerticesOfQuiver(q), v -> OutDegreeOfVertex(v) > 2);
+  for j in vertices do
+    for k in PathsOfLengthTwo(q) do
+      if WalkOfPath(k)[1] in OutgoingArrowsOfVertex(j) then
+        Print(WalkOfPath(k));
+        Print("\n");
+        Add(paths,k);
+      fi;
+    od;
+  od;
+  return paths;
+end;
+
+otherZigzagPaths:= function(g,q,indices)
+  local edgeList,i,j,k,arrow,vertex,correspondingHedge,paths,fst,dualVertices,filtered;
+  edgeList := Orbits(Group(getEdges(g)), [1..numEdges(g)]);
+  paths := [];
+  filtered := [];
+  dualVertices := Orbits(Group(getVertices(g)), [1..numEdges(g)]); #vertices of the original bipartie graph,this is to get the orbits of \nu
+  for i in edgeList do
+    fst := i[1]; #2i-1
+    arrow := ArrowsOfQuiver(q)[Position(indices,fst)];
+    vertex := TargetOfPath(arrow);
+    if OutDegreeOfVertex(vertex) > 2 then
+      for j in OutgoingArrowsOfVertex(vertex) do
+        correspondingHedge := indices[Position(ArrowsOfQuiver(q),j)];
+        Add(paths,[fst,correspondingHedge]);
+      od;
+    fi;
+  od;
+  for j in paths do
+    for k in dualVertices do
+      if (j[1] in k and j[2] in k) then #check if edge is part of a face
+        Add(filtered,j);
+      fi;
+      if (j[1]+1 in k and j[2]+1 in k) then
+        Add(filtered,j);
+      fi;
+    od;
+  od;
+  return Difference(paths,filtered); #filter out edges part of a face
+end;
+
 zigzagRelations := function(paths,kq,indices)
   local relations, i;
   relations := [];
@@ -176,18 +223,21 @@ zigzagRelations := function(paths,kq,indices)
   return relations;
 end;
 
-totalRelations := function(g,kq,indices)
-  local relations,zigzags;
+
+totalRelations := function(g,kq,indices,q)
+  local relations,zigzags,otherZigzags;
   relations := superpotentialRelations(getSuperpotentialPaths(g),kq,indices);
   zigzags := zigzagRelations(zigzagPaths(g),kq,indices);
+  otherZigzags := zigzagRelations(otherZigzagPaths(g,q,indices),kq,indices);
   Append(relations,zigzags);
-  return Set(relations);
+  Append(relations,otherZigzags);
+  return DuplicateFreeList(relations);
 end;
 
 faceAlgebra := function(g)
   local i,q,kq;
   q := buildQuiver(g);
   kq := PathAlgebra(Rationals,q[1]);
-  return kq/totalRelations(g,kq,q[2]);
+  return kq/totalRelations(g,kq,q[2],q[1]);
 end;
 
