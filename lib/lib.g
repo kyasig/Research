@@ -167,6 +167,7 @@ zigzagPaths := function(g)
   return paths;
 end;
 
+  #Still may miss some of the length 2 relations.  see below
 otherZigzagPaths:= function(g,q,indices)
   local edgeList,i,j,k,arrow,vertex,correspondingHedge,paths,fst,dualVertices,filtered;
   edgeList := Orbits(Group(getEdges(g)), [1..numEdges(g)]);
@@ -186,6 +187,10 @@ otherZigzagPaths:= function(g,q,indices)
   od;
   for j in paths do
     for k in dualVertices do
+
+  # The following 2 If's are not sufficient.  2 edges/arrows may be part of the same face, but not consecutive.
+    # we only want to keep those paths of length 2 that consist of consecutive edges in a face
+    # so we need to check if j[1] and j[2] are consecutive entries of k, in either order, etc.
       if (j[1] in k and j[2] in k) then #check if edge is part of a face
         Add(filtered,j);
       fi;
