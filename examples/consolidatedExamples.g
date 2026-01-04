@@ -2,50 +2,58 @@ Read("../lib/lib.g");
 n1 := 8;
 v1 := (1,7,5,3)(2,12,6,10)(15,9,13,11)(14,8,16,4);
 f1 := epsilon(2*n1)*v1;
-F1 := faceAlgebra(getGraph(n1,v1));
+g1 := getGraph(n1,v1);
+F1 := faceAlgebra(g1);
 
 
 #not symmetric
 n2 := 12;
 v2 := (1,11,17)(2,24,4)(3,21,15)(5,23,7)(6,10,18)(8,22,14)(9,13,19)(12,16,20);
 f2 := epsilon(2*n2)*v2;
-F2 := faceAlgebra(getGraph(n2,v2));
+g2 := getGraph(n2,v2);
+F2 := faceAlgebra(g2);
 
 n3 := 6;
 v3 := (1,5,3)(7,11,9)(2,8,6,12,4,10);
 f3 := epsilon(2*n3)*v3;
-F3 := faceAlgebra(getGraph(n3,v3));
+g3 := getGraph(n3,v3);
+F3 := faceAlgebra(g3);
 
 
 n4 := 10;
 f4 := (1,18,11,10)(2,3,20,13)(4,5,12,15)(6,7,14,17)(8,9,16,19);
 v4 := epsilon(2*n4)*f4;
-F4 := faceAlgebra(getGraph(n4,v4));
+g4 := getGraph(n4,v4);
+F4 := faceAlgebra(g4);
 
 
 n5 := 16;
 f5 := (2,9,14,3)(1,8,25,12)(6,11,30,7)(28,29,24,31)(22,23,26,27)(13,20,21,18)(16,17,32,19)(4,15,10,5);
 v5 := epsilon(2*n5)*f5;
-F5 := faceAlgebra(getGraph(n5,v5));
+g5 := getGraph(n5,v5);
+F5 := faceAlgebra(g5);
 
 
 #error
 n6 := 15;
 v6 := (2,10,20,24)(4,12,22,30,8)(1,9,17,25)(3,13,5,29,21,11)(6,14,28,18)(26,16)(7,23)(15,19,27);
 f6 := epsilon(2*n6)*v6;
-F6 := faceAlgebra(getGraph(n6,v6));
+g6 := getGraph(n6,v6);
+F6 := faceAlgebra(g6);
 
 
 
 n7 := 10;
 f7 := (1,18,11,10)(2,3,20,13)(4,5,12,15)(6,7,14,17)(8,9,16,19);
 v7 := epsilon(2*n7)*f7;
-F7 := faceAlgebra(getGraph(n7,v7));
+g7 := getGraph(n7,v7);
+F7 := faceAlgebra(g7);
 
 
 # not symmetric
 n8 := 6;
 f8 := (1,10,11,8,9,12)(2,5,4,7,6,3);
 v8 := epsilon(2*n8)*f8;
-F8 := faceAlgebra(getGraph(n8,v8));
+g8 := getGraph(n8,v8);
+F8 := faceAlgebra(g8);
 
