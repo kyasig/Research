@@ -59,6 +59,16 @@ buildQuiver := function(g)
   return [Q,indices];
 end;
 
+getRightFace := function(edge, g)
+  local curr, face;
+  face := [edge[1]];
+  curr := (edge[1]) ^ getVertices(g);
+  while curr <> edge[1] do
+    Add(face, curr);
+    curr := curr ^ (getVertices(g));
+  od;
+  return face;
+end;
 
 getLeftFace := function(edge, g)
   local curr, face;
@@ -71,17 +81,6 @@ getLeftFace := function(edge, g)
   return face;
 end;
 
-getRightFace := function(edge, g)
-  local curr, face;
-  face := [edge[1]];
-  curr := (edge[1]) ^ getVertices(g);
-  while curr <> edge[1] do
-    Add(face, curr);
-    curr := curr ^ (getVertices(g));
-  od;
-  return face;
-end;
-
 
 genArrows := function(kq)
   local arrowGens, n;
@@ -90,10 +89,9 @@ genArrows := function(kq)
   return arrowGens{[n+1..Length(arrowGens)]};
 end;
 
-
 multiplyEdges := function(halfEdges,kq,indices) #uses a list of indices that match a half-edge with its position in the quiver
  local edge, i,prod, arrows,halfEdge;
- prod := One(kq); #multiplicative identity
+ prod := One(kq);
  arrows := genArrows(kq);
  for halfEdge in halfEdges do
   if halfEdge mod 2 = 0 then
@@ -168,12 +166,11 @@ zigzagPaths := function(g)
 end;
 
 otherZigzagPaths:= function(g,q,indices)
-  local edgeList,i,j,k,arrow,vertex,correspondingHedge,paths,fst,dualVertices,filtered,nu;
+  local edgeList,i,j,k,arrow,vertex,correspondingHedge,paths,fst,filtered,nu;
   edgeList := Orbits(Group(getEdges(g)), [1..numEdges(g)]);
   nu := getVertices(g);
   paths := [];
   filtered := [];
-  dualVertices := Orbits(Group(getVertices(g)), [1..numEdges(g)]); #vertices of the original bipartie graph,this is to get the orbits of \nu
   for i in edgeList do
     fst := i[1]; #2i-1
     arrow := ArrowsOfQuiver(q)[Position(indices,fst)];
@@ -186,14 +183,12 @@ otherZigzagPaths:= function(g,q,indices)
     fi;
   od;
   for j in paths do
-    for k in dualVertices do
-      if ((j[1]^nu) = j[2]) then #check if edge is part of a face
-        Add(filtered,j);
-      fi;
-      if ((j[1]+1) = (j[2]^nu)+2) then #check if edge is part of a face
-        Add(filtered,j);
-      fi;
-    od;
+    if ((j[1]^nu) = j[2]) then #check if edge is part of a face
+      Add(filtered,j);
+    fi;
+    if ((j[1]+1) = (j[2]+1)^nu) then #check if edge is part of a face
+      Add(filtered,j);
+    fi;
   od;
   return Difference(paths,filtered); #filter out edges part of a face
 end;
@@ -215,6 +210,7 @@ totalRelations := function(g,kq,indices,q)
   otherZigzags := zigzagRelations(otherZigzagPaths(g,q,indices),kq,indices);
   Append(relations,zigzags);
   Append(relations,otherZigzags);
+  #relations := Filtered(relations,x -> not IsEmpty(x));
   return DuplicateFreeList(relations);
 end;
 
@@ -224,4 +220,3 @@ faceAlgebra := function(g)
   kq := PathAlgebra(Rationals,q[1]);
   return kq/totalRelations(g,kq,q[2],q[1]);
 end;
-
