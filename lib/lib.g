@@ -220,3 +220,18 @@ faceAlgebra := function(g)
   kq := PathAlgebra(Rationals,q[1]);
   return kq/totalRelations(g,kq,q[2],q[1]);
 end;
+
+
+dim := function(g)
+  local faces,cycles,numArrows,sum,cycle,k;
+  numArrows := numEdges(g);
+  sum := 0;
+  faces := Orbits(Group(getFaces(g)),[1..numEdges(g)]);
+  cycles := Orbits(Group(getVertices(g)),[1..numEdges(g)]);
+  for cycle in cycles do
+    k := Length(cycle);
+    sum := sum + ((k-3)*k);
+  od;
+  sum := sum + numArrows + (2*Length(faces));
+  return sum;
+end;
