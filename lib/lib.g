@@ -235,3 +235,18 @@ dim := function(g)
   sum := sum + numArrows + (2*Length(faces));
   return sum;
 end;
+
+twist := function(g)
+  local orbits,orbit,new,n;
+  n := numEdges(g)/2;
+  orbits := Orbits(Group(getVertices(g)),[1..numEdges(g)]);
+  new := ();
+  for orbit in orbits do
+    if orbit[1] mod 2 = 0 then
+     new := new * Inverse(CycleFromList(orbit));
+    else
+     new := new * CycleFromList(orbit);
+    fi;
+  od;
+  return getGraph(n,new);
+end;
